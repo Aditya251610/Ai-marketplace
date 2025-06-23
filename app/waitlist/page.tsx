@@ -26,11 +26,11 @@ import {
   Star,
   Globe,
   Shield,
-  Rocket
+  Rocket,
+  Send
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { gsap } from 'gsap';
-import { supabase } from '@/lib/supabase';
 
 type WaitlistFormData = {
   email: string;
@@ -218,40 +218,26 @@ export default function WaitlistPage() {
     setIsSubmitting(true);
 
     try {
-      // Submit to Supabase
-      const { data, error } = await supabase
-        .from('waitlist')
-        .insert([{
-          email: formData.email,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          company: formData.company,
-          role: formData.role,
-          use_case: formData.useCase,
-          interests: formData.interests,
-          referral_source: formData.referralSource,
-          newsletter_consent: formData.newsletter,
-          ip_address: '', // Will be populated by backend
-          user_agent: navigator.userAgent
-        }])
-        .select('position')
-        .single();
+      // Submit to our API endpoint
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
 
-      if (error) {
-        // Handle duplicate email
-        if (error.code === '23505') {
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 409) {
           toast.error('This email is already on our waitlist!');
           return;
         }
-        throw error;
+        throw new Error(result.error || 'Failed to join waitlist');
       }
 
-      // Get waitlist position
-      const { count } = await supabase
-        .from('waitlist')
-        .select('*', { count: 'exact', head: true });
-
-      setPosition(count || 1);
+      setPosition(result.position);
       setIsSubmitted(true);
       
       // Success animation
@@ -265,22 +251,7 @@ export default function WaitlistPage() {
         });
       }
 
-      toast.success('Successfully joined the waitlist!');
-
-      // Send welcome email (backend integration)
-      try {
-        await fetch('/api/waitlist/welcome', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            firstName: formData.firstName,
-            position: count || 1
-          })
-        });
-      } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
-      }
+      toast.success('🎉 Successfully joined the waitlist! Check your email for confirmation.');
 
     } catch (error) {
       console.error('Waitlist submission error:', error);
@@ -322,8 +293,17 @@ export default function WaitlistPage() {
               <Separator className="my-6" />
 
               <div className="space-y-4 text-left">
+                <div className="flex items-center gap-3 mb-4">
+                  <Send className="h-5 w-5 text-primary" />
+                  <span className="font-semibold">Welcome email sent!</span>
+                </div>
+                
                 <h3 className="font-semibold text-lg">What happens next?</h3>
                 <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+                    <span className="text-sm">Check your email for a welcome message with your position</span>
+                  </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
                     <span className="text-sm">We'll send you exclusive updates about our progress</span>
@@ -344,10 +324,26 @@ export default function WaitlistPage() {
                   Share AI Nexus with friends and move up the waitlist faster!
                 </p>
                 <div className="flex gap-3">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => {
+                      const tweetText = `Just joined the AI Nexus waitlist! The future of decentralized AI is coming. Join me: https://ainexus.com/waitlist?ref=${encodeURIComponent(formData.email)}`;
+                      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, '_blank');
+                    }}
+                  >
                     Share on Twitter
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://ainexus.com/waitlist?ref=${encodeURIComponent(formData.email)}`);
+                      toast.success('Referral link copied to clipboard!');
+                    }}
+                  >
                     Copy Link
                   </Button>
                 </div>
@@ -440,6 +436,17 @@ export default function WaitlistPage() {
                   );
                 })}
               </div>
+
+              <div className="bg-primary/10 p-6 rounded-lg border border-primary/20">
+                <div className="flex items-center gap-3 mb-3">
+                  <Send className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-primary">Instant Email Confirmation</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  You'll receive a welcome email immediately after joining with your waitlist position, 
+                  exclusive updates, and a referral link to move up faster!
+                </p>
+              </div>
             </div>
 
             {/* Waitlist Form */}
@@ -451,7 +458,7 @@ export default function WaitlistPage() {
                     Join the Waitlist
                   </CardTitle>
                   <CardDescription>
-                    Reserve your spot and be notified when we launch
+                    Reserve your spot and get instant email confirmation
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -597,7 +604,8 @@ export default function WaitlistPage() {
                       </>
                     ) : (
                       <>
-                        Join Waitlist
+                        <Send className="h-4 w-4 mr-2" />
+                        Join Waitlist & Get Email
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </>
                     )}
@@ -605,7 +613,7 @@ export default function WaitlistPage() {
 
                   <p className="text-xs text-muted-foreground text-center">
                     By joining, you agree to our Terms of Service and Privacy Policy.
-                    We'll never spam you or share your email.
+                    You'll receive an instant confirmation email with your position.
                   </p>
                 </CardContent>
               </Card>

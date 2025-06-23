@@ -11,6 +11,7 @@ A comprehensive decentralized platform for AI agent discovery, testing, and lice
 - **IPFS Storage**: Decentralized model storage using Web3.Storage
 - **Developer Portal**: Upload and monetize AI agents
 - **User Dashboard**: Manage licenses, view test history, and track usage
+- **Waitlist System**: Complete waitlist management with automatic email notifications
 
 ### Technical Stack
 - **Frontend**: Next.js 13, TypeScript, Tailwind CSS, shadcn/ui
@@ -19,6 +20,7 @@ A comprehensive decentralized platform for AI agent discovery, testing, and lice
 - **Blockchain**: Ethereum (Sepolia testnet), Solidity smart contracts
 - **Storage**: IPFS via Web3.Storage
 - **Web3**: wagmi, RainbowKit for wallet integration
+- **Email**: Automatic email notifications with multiple service support
 
 ## 🚀 Quick Start
 
@@ -49,10 +51,36 @@ cp .env.example .env.local
 
 4. **Database Setup**
 - Create a Supabase project
-- Run the migration: `supabase/migrations/create_agents_tables.sql`
+- Run the migrations in `supabase/migrations/`
 - Update your `.env.local` with Supabase credentials
 
-5. **Start Development Servers**
+5. **Email Configuration (Optional)**
+Choose one of the following email services:
+
+**Option 1: Gmail SMTP (Easiest for development)**
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password  # Generate app password in Gmail settings
+FROM_EMAIL=noreply@yourdomain.com
+```
+
+**Option 2: SendGrid**
+```bash
+EMAIL_SERVICE=sendgrid
+SENDGRID_API_KEY=your_sendgrid_api_key
+FROM_EMAIL=noreply@yourdomain.com
+```
+
+**Option 3: Resend (Recommended for production)**
+```bash
+EMAIL_SERVICE=resend
+RESEND_API_KEY=your_resend_api_key
+FROM_EMAIL=noreply@yourdomain.com
+```
+
+6. **Start Development Servers**
 
 Frontend:
 ```bash
@@ -64,6 +92,25 @@ Backend:
 cd backend
 python main.py
 ```
+
+## 📧 Email System
+
+### Automatic Email Features
+- **Instant Welcome Emails**: Sent immediately when users join the waitlist
+- **Position Tracking**: Users receive their waitlist position via email
+- **Beautiful HTML Templates**: Professional, responsive email designs
+- **Referral Links**: Automatic generation of referral links for sharing
+- **Multiple Service Support**: SendGrid, Mailgun, Resend, SMTP
+
+### Email Templates Include:
+- Welcome message with waitlist position
+- Exclusive benefits and next steps
+- Social sharing buttons
+- Referral tracking links
+- Professional branding and styling
+
+### Development Mode
+In development, emails are logged to the console instead of being sent. Set `NODE_ENV=production` to enable actual email sending.
 
 ## 🏗️ Architecture
 
@@ -80,11 +127,14 @@ The `AIAgentMarketplace.sol` contract handles:
 - **benchmarks**: Performance metrics and test results
 - **user_licenses**: License ownership tracking
 - **reviews**: User ratings and feedback
+- **waitlist**: Waitlist management with email tracking
 
 ### API Endpoints
 - `GET /agents` - List all available agents
 - `POST /test` - Test an agent with custom input
 - `POST /agents/{id}/benchmark` - Run comprehensive benchmarks
+- `POST /api/waitlist` - Join waitlist with automatic email
+- `GET /api/waitlist/stats` - Waitlist analytics
 - `GET /health` - System health check
 
 ## 🧪 Testing
@@ -95,6 +145,7 @@ The platform includes realistic seed data:
 - Mock user licenses and reviews
 - Performance benchmarks
 - Test transaction history
+- Sample waitlist entries
 
 ### Test Agents
 1. **Text Summarizer Pro** - BART-based summarization (0.01 ETH)
@@ -103,12 +154,22 @@ The platform includes realistic seed data:
 
 ## 🔧 Configuration
 
-### Promo Codes Integration
-The platform supports various service integrations:
-- RevenueCat: `rev.cat/bolt`
-- Sentry: `bolt-sentry-wlh`
-- IPFS/API: `BOLTsmgbmtwwms512`
-- Additional codes for Lingo, Dappier, Pica, Expo, DEV++
+### Email Service Setup
+
+**For Gmail SMTP:**
+1. Enable 2-factor authentication
+2. Generate an app password
+3. Use the app password in `SMTP_PASS`
+
+**For SendGrid:**
+1. Create a SendGrid account
+2. Generate an API key
+3. Verify your sender domain
+
+**For Resend:**
+1. Sign up at resend.com
+2. Generate an API key
+3. Verify your domain
 
 ### Smart Contract Deployment
 ```bash
@@ -126,6 +187,7 @@ npx hardhat run scripts/deploy.js --network sepolia
 - Purchase licenses with ETH
 - Rate and review agents
 - Track usage and spending
+- Join waitlist with instant email confirmation
 
 ### For Developers
 - Upload AI models to IPFS
@@ -140,6 +202,7 @@ npx hardhat run scripts/deploy.js --network sepolia
 - Revenue sharing (90% to creators)
 - Comprehensive analytics
 - Security and compliance
+- Automated email marketing
 
 ## 🛠️ Development
 
@@ -160,6 +223,7 @@ npx hardhat run scripts/deploy.js --network sepolia
 - `TestSandbox`: Interactive testing interface
 - `DeveloperPortal`: Agent upload and management
 - `Dashboard`: User analytics and management
+- `WaitlistPage`: Waitlist signup with email automation
 
 ## 🔐 Security
 
@@ -168,6 +232,7 @@ npx hardhat run scripts/deploy.js --network sepolia
 - Input validation and sanitization
 - Rate limiting on API endpoints
 - Secure wallet integration
+- Email validation and spam protection
 
 ## 🚀 Deployment
 
@@ -186,12 +251,16 @@ docker run -p 8000:8000 ai-agent-api
 ### Smart Contracts
 Deploy to Ethereum testnets or mainnet using Hardhat.
 
+### Email Service
+Configure your chosen email service in production environment variables.
+
 ## 📊 Monitoring
 
 - Supabase Analytics for database metrics
 - Smart contract events for blockchain activity
 - FastAPI metrics for backend performance
 - User analytics for platform usage
+- Email delivery tracking and analytics
 
 ## 🤝 Contributing
 
@@ -211,6 +280,7 @@ For support and questions:
 - Create an issue on GitHub
 - Check the documentation
 - Join our Discord community
+- Email: support@ainexus.com
 
 ---
 
