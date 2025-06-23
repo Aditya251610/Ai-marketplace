@@ -91,10 +91,10 @@ const config: Config = {
         },
         pulseGlow: {
           '0%': {
-            boxShadow: '0 0 20px hsl(var(--primary) / 0.3)',
+            boxShadow: '0 0 20px rgba(34, 197, 94, 0.3)',
           },
           '100%': {
-            boxShadow: '0 0 40px hsl(var(--primary) / 0.6)',
+            boxShadow: '0 0 40px rgba(34, 197, 94, 0.6)',
           },
         },
       },

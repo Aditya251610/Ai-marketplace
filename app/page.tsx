@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, Search, Filter, Zap, Users, TrendingUp, Bot, Code, TestTube, Sparkles, ArrowRight, Play } from 'lucide-react';
+import { Star, Search, Filter, Zap, Users, TrendingUp, Bot, Code, TestTube, Sparkles, ArrowRight, Play, Building2 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -119,6 +119,12 @@ const seedAgents: Agent[] = [
   },
 ];
 
+const partners = [
+  { name: 'Barclays', icon: Building2 },
+  { name: 'Bancorp', icon: Building2 },
+  { name: 'Santander', icon: Building2 },
+];
+
 export default function MarketplacePage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
@@ -144,9 +150,14 @@ export default function MarketplacePage() {
     if (heroRef.current) {
       const tl = gsap.timeline();
       
-      tl.fromTo(heroRef.current.querySelector('.hero-title'),
+      tl.fromTo(heroRef.current.querySelector('.hero-badge'),
+        { y: 50, opacity: 0, scale: 0.8 },
+        { y: 0, opacity: 1, scale: 1, duration: 1, ease: "power3.out" }
+      )
+      .fromTo(heroRef.current.querySelector('.hero-title'),
         { y: 100, opacity: 0, scale: 0.8 },
-        { y: 0, opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" }
+        { y: 0, opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" },
+        "-=0.8"
       )
       .fromTo(heroRef.current.querySelector('.hero-subtitle'),
         { y: 50, opacity: 0 },
@@ -157,22 +168,11 @@ export default function MarketplacePage() {
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" },
         "-=0.6"
-      );
-    }
-
-    // Stats animation
-    if (statsRef.current) {
-      gsap.fromTo(statsRef.current.children,
-        { y: 50, opacity: 0, scale: 0.8 },
-        { 
-          y: 0, 
-          opacity: 1, 
-          scale: 1, 
-          duration: 0.8, 
-          stagger: 0.2, 
-          ease: "back.out(1.7)",
-          delay: 0.5
-        }
+      )
+      .fromTo(heroRef.current.querySelector('.hero-partners'),
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" },
+        "-=0.4"
       );
     }
   }, []);
@@ -249,198 +249,218 @@ export default function MarketplacePage() {
   };
 
   return (
-    <div className="min-h-screen gradient-bg mesh-gradient">
+    <div className="min-h-screen gradient-bg">
       <Header />
 
       {/* Hero Section */}
-      <section ref={heroRef} className="container py-12 sm:py-20 text-center max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="hero-title">
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold mb-6 text-gradient leading-tight">
-            Discover the Future
-            <br />
-            <span className="inline-flex items-center gap-2 sm:gap-4">
-              of AI Agents
-              <Sparkles className="h-8 w-8 sm:h-12 sm:w-12 text-accent floating-animation" />
-            </span>
-          </h1>
-        </div>
-        
-        <div className="hero-subtitle">
-          <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed">
-            Test, license, and deploy cutting-edge AI models in our decentralized marketplace.
-            <br className="hidden sm:block" />
-            Built with blockchain technology and IPFS storage for the next generation.
-          </p>
-        </div>
-        
-        <div className="hero-buttons flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12 sm:mb-20">
-          <Button size="lg" className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg gap-2 sm:gap-3 neon-glow hover:scale-105 transition-all duration-300" asChild>
-            <Link href="/test">
-              <Play className="h-5 w-5 sm:h-6 sm:w-6" />
-              Start Testing
-              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Link>
-          </Button>
-          <Button size="lg" variant="outline" className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg gap-2 sm:gap-3 glass-effect hover:scale-105 transition-all duration-300" asChild>
-            <Link href="/developer">
-              <Code className="h-5 w-5 sm:h-6 sm:w-6" />
-              Build & Earn
-            </Link>
-          </Button>
-        </div>
-        
-        {/* Stats */}
-        <div ref={statsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-12 mb-16 sm:mb-24">
-          <div className="glass-effect p-6 sm:p-8 rounded-2xl card-3d">
-            <Bot className="h-10 w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-3 sm:mb-4 pulse-glow" />
-            <div className="text-3xl sm:text-4xl font-bold text-gradient">{agents.length}+</div>
-            <div className="text-muted-foreground text-sm sm:text-base">AI Agents</div>
+      <section ref={heroRef} className="hero-section pt-24 pb-16 sm:pt-32 sm:pb-24">
+        <div className="container text-center max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="hero-badge mb-6">
+            <Badge variant="secondary" className="glass-effect px-4 py-2 text-sm">
+              <Sparkles className="h-4 w-4 mr-2" />
+              Meet Perspective AI
+            </Badge>
           </div>
-          <div className="glass-effect p-6 sm:p-8 rounded-2xl card-3d">
-            <Users className="h-10 w-10 sm:h-12 sm:w-12 text-accent mx-auto mb-3 sm:mb-4 pulse-glow" />
-            <div className="text-3xl sm:text-4xl font-bold text-gradient">2.5K+</div>
-            <div className="text-muted-foreground text-sm sm:text-base">Active Users</div>
+          
+          <div className="hero-title mb-6">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-tight">
+              The{' '}
+              <span className="text-gradient inline-flex items-center gap-2">
+                <Bot className="h-8 w-8 sm:h-12 sm:w-12 floating-animation" />
+                Decentralized
+              </span>
+              <br />
+              AI Marketplace
+            </h1>
           </div>
-          <div className="glass-effect p-6 sm:p-8 rounded-2xl card-3d">
-            <TrendingUp className="h-10 w-10 sm:h-12 sm:w-12 text-success mx-auto mb-3 sm:mb-4 pulse-glow" />
-            <div className="text-3xl sm:text-4xl font-bold text-gradient">50K+</div>
-            <div className="text-muted-foreground text-sm sm:text-base">Tests Run</div>
+          
+          <div className="hero-subtitle mb-12">
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Create, Use, and Profit from AI Models in One Ecosystem
+            </p>
+          </div>
+          
+          <div className="hero-buttons flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Button size="lg" className="h-12 sm:h-14 px-8 text-base bg-primary text-black hover:bg-primary/90 neon-glow">
+              Create & Earn
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 sm:h-14 px-8 text-base glass-effect border-border/40 hover:bg-primary/10">
+              Explore AIs
+            </Button>
+          </div>
+
+          <div className="hero-partners">
+            <p className="text-sm text-muted-foreground mb-6">Trusted by</p>
+            <div className="flex items-center justify-center gap-8 opacity-60">
+              {partners.map((partner, index) => {
+                const Icon = partner.icon;
+                return (
+                  <div key={index} className="flex items-center gap-2">
+                    <Icon className="h-5 w-5" />
+                    <span className="text-sm font-medium">{partner.name}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Search and Filter */}
-      <section className="container mb-8 sm:mb-12 px-4 sm:px-6">
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mb-8 sm:mb-12 max-w-4xl mx-auto">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Search AI agents..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 sm:h-14 text-base glass-effect border-border/40 focus:border-primary/50 transition-all duration-300"
-            />
-          </div>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full lg:w-64 h-12 sm:h-14 glass-effect border-border/40">
-              <Filter className="h-5 w-5 mr-2" />
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent className="glass-effect border-border/40">
-              {categories.map((category) => (
-                <SelectItem key={category} value={category} className="focus:bg-primary/10">
-                  {category}
-                </SelectItem>
+      {/* AI Marketplace Section */}
+      <section className="py-16 sm:py-24">
+        <div className="container px-4 sm:px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">AI Marketplace</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Develop and deploy AI models with step-by-step instructions, additional knowledge, and a blend of various skills.
+              </p>
+            </div>
+
+            {/* Search and Filter */}
+            <div className="flex flex-col lg:flex-row gap-4 mb-12 max-w-4xl mx-auto">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  placeholder="Search AI models..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-12 glass-effect border-border/40 focus:border-primary/50"
+                />
+              </div>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full lg:w-64 h-12 glass-effect border-border/40">
+                  <Filter className="h-5 w-5 mr-2" />
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="glass-effect border-border/40">
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex flex-wrap gap-2 justify-center mb-12">
+              {['Trending', 'Popular', 'New', 'On the Rise', 'Great for teams'].map((filter) => (
+                <Button
+                  key={filter}
+                  variant="outline"
+                  size="sm"
+                  className="nav-pill border-border/40 hover:border-primary/30"
+                >
+                  {filter}
+                </Button>
               ))}
-            </SelectContent>
-          </Select>
+            </div>
+
+            {/* Agents Grid */}
+            {loading ? (
+              <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="glass-effect border-border/40 animate-pulse">
+                    <CardHeader>
+                      <div className="h-6 bg-muted/30 rounded w-3/4 mb-2"></div>
+                      <div className="h-4 bg-muted/20 rounded w-1/2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-24 bg-muted/20 rounded mb-4"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredAgents.length === 0 ? (
+              <div className="text-center py-16">
+                <Bot className="h-16 w-16 text-muted-foreground mx-auto mb-6 opacity-50" />
+                <h3 className="text-xl font-semibold mb-4">No agents found</h3>
+                <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
+              </div>
+            ) : (
+              <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredAgents.map((agent, index) => (
+                  <Card 
+                    key={agent.id} 
+                    className="glass-effect border-border/40 card-3d group hover:border-primary/30 transition-all duration-500 overflow-hidden"
+                  >
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg mb-2 group-hover:text-primary transition-colors duration-300 line-clamp-2">
+                            {agent.name}
+                          </CardTitle>
+                          <CardDescription className="text-sm line-clamp-3">
+                            {agent.description}
+                          </CardDescription>
+                        </div>
+                        <Badge variant="secondary" className="ml-3 shrink-0 glass-effect">
+                          {agent.category}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      <div className="glass-effect p-3 rounded-lg">
+                        <div className="text-xs font-medium mb-2 text-primary">Sample Input:</div>
+                        <div className="text-xs text-muted-foreground line-clamp-2">
+                          {agent.sample_input}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-medium">{agent.rating.toFixed(1)}</span>
+                          <span className="text-muted-foreground">({agent.total_ratings})</span>
+                        </div>
+                        <div className="text-muted-foreground">
+                          {(agent.usage_count ?? 0).toLocaleString()} uses
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs text-muted-foreground">
+                          by {formatAddress(agent.creator_address ?? '')}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-gradient">
+                            {formatPrice(agent.price_eth)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {agent.language}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="gap-3 pt-4">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1 glass-effect hover:bg-primary/10 hover:border-primary/50" 
+                        asChild
+                      >
+                        <Link href={`/test?agent=${agent.id}`}>
+                          <TestTube className="h-4 w-4 mr-2" />
+                          Test
+                        </Link>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="flex-1 bg-primary text-black hover:bg-primary/90 neon-glow"
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        License
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </section>
-
-      {/* Agents Grid */}
-      <section className="container pb-16 sm:pb-24 px-4 sm:px-6">
-        {loading ? (
-          <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="glass-effect border-border/40 animate-pulse">
-                <CardHeader>
-                  <div className="h-6 bg-muted/30 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-muted/20 rounded w-1/2"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-24 bg-muted/20 rounded mb-4"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : filteredAgents.length === 0 ? (
-          <div className="text-center py-16 sm:py-24">
-            <Bot className="h-16 w-16 sm:h-20 sm:w-20 text-muted-foreground mx-auto mb-6 opacity-50" />
-            <h3 className="text-xl sm:text-2xl font-semibold mb-4">No agents found</h3>
-            <p className="text-muted-foreground text-base sm:text-lg">Try adjusting your search or filter criteria.</p>
-          </div>
-        ) : (
-          <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
-            {filteredAgents.map((agent, index) => (
-              <Card 
-                key={agent.id} 
-                className="glass-effect border-border/40 card-3d group hover:border-primary/30 transition-all duration-500 overflow-hidden"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg sm:text-xl mb-2 group-hover:text-primary transition-colors duration-300 line-clamp-2">
-                        {agent.name}
-                      </CardTitle>
-                      <CardDescription className="text-sm sm:text-base line-clamp-3">
-                        {agent.description}
-                      </CardDescription>
-                    </div>
-                    <Badge variant="secondary" className="ml-3 shrink-0 glass-effect">
-                      {agent.category}
-                    </Badge>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4 sm:space-y-6">
-                  <div className="glass-effect p-3 sm:p-4 rounded-xl">
-                    <div className="text-xs sm:text-sm font-medium mb-2 text-primary">Sample Input:</div>
-                    <div className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                      {agent.sample_input}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{agent.rating.toFixed(1)}</span>
-                      <span className="text-muted-foreground">({agent.total_ratings})</span>
-                    </div>
-                    <div className="text-muted-foreground">
-                      {(agent.usage_count ?? 0).toLocaleString()} uses
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs sm:text-sm text-muted-foreground">
-                      by {formatAddress(agent.creator_address ?? '')}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg sm:text-xl font-bold text-gradient">
-                        {formatPrice(agent.price_eth)}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">
-                        {agent.language}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="gap-3 pt-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1 glass-effect hover:bg-primary/10 hover:border-primary/50 transition-all duration-300" 
-                    asChild
-                  >
-                    <Link href={`/test?agent=${agent.id}`}>
-                      <TestTube className="h-4 w-4 mr-2" />
-                      Test
-                    </Link>
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    className="flex-1 neon-glow hover:scale-105 transition-all duration-300"
-                  >
-                    <Zap className="h-4 w-4 mr-2" />
-                    License
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
       </section>
 
       <Footer />
