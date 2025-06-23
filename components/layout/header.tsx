@@ -110,8 +110,11 @@ export function Header() {
             variant="outline" 
             size="sm" 
             className="hidden sm:flex nav-pill border-primary/30 text-primary hover:bg-primary/10"
+            asChild
           >
-            Join Waitlist
+            <Link href="/waitlist">
+              Join Waitlist
+            </Link>
           </Button>
           
           <div className="hidden sm:block">
@@ -153,8 +156,10 @@ export function Header() {
                 ))}
                 
                 <div className="mt-6 pt-6 border-t border-border/40">
-                  <Button className="w-full mb-4 nav-pill bg-primary text-black hover:bg-primary/90">
-                    Join Waitlist
+                  <Button className="w-full mb-4 nav-pill bg-primary text-black hover:bg-primary/90" asChild>
+                    <Link href="/waitlist" onClick={() => setIsOpen(false)}>
+                      Join Waitlist
+                    </Link>
                   </Button>
                   <ConnectButton />
                 </div>
