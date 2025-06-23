@@ -258,7 +258,7 @@ export default function MarketplacePage() {
           <div className="hero-badge mb-6">
             <Badge variant="secondary" className="glass-effect px-4 py-2 text-sm">
               <Sparkles className="h-4 w-4 mr-2" />
-              Meet Perspective AI
+              Meet AI Nexus
             </Badge>
           </div>
           
@@ -266,7 +266,7 @@ export default function MarketplacePage() {
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-tight">
               The{' '}
               <span className="text-gradient inline-flex items-center gap-2">
-                <Bot className="h-8 w-8 sm:h-12 sm:w-12 floating-animation" />
+                <Zap className="h-8 w-8 sm:h-12 sm:w-12 floating-animation" />
                 Decentralized
               </span>
               <br />

@@ -7,7 +7,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { Menu, Bot, X } from 'lucide-react';
+import { Menu, Zap, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { gsap } from 'gsap';
 
@@ -79,10 +79,13 @@ export function Header() {
               onMouseEnter={handleLogoHover}
               onMouseLeave={handleLogoLeave}
             >
-              <Bot className="h-4 w-4 sm:h-6 sm:w-6 text-black" />
+              <Zap className="h-4 w-4 sm:h-6 sm:w-6 text-black" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg sm:text-xl brand-logo">Perspective AI</span>
+              <span className="font-bold text-lg sm:text-xl brand-logo">AI Nexus</span>
+              <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
+                Beta
+              </Badge>
             </div>
           </Link>
 
@@ -128,7 +131,8 @@ export function Header() {
             <SheetContent side="right" className="w-80 glass-effect border-l border-border/40">
               <div className="flex flex-col gap-6 mt-8">
                 <div className="text-center">
-                  <div className="text-2xl font-bold brand-logo mb-2">Perspective AI</div>
+                  <div className="text-2xl font-bold brand-logo mb-2">AI Nexus</div>
+                  <Badge variant="secondary">Beta</Badge>
                 </div>
                 
                 {navigation.map((item, index) => (

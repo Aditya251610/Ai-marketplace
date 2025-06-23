@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Bot, Github, Twitter, MessageCircle, ArrowUp } from 'lucide-react';
+import { Zap, Github, Twitter, MessageCircle, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { gsap } from 'gsap';
 
@@ -40,10 +40,10 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2 lg:col-span-2">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent neon-glow">
-                <Bot className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
+                <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
               </div>
               <div>
-                <span className="font-bold text-xl sm:text-2xl brand-logo">Perspective AI</span>
+                <span className="font-bold text-xl sm:text-2xl brand-logo">AI Nexus</span>
                 <div className="text-xs sm:text-sm text-muted-foreground">Beta</div>
               </div>
             </div>
@@ -152,7 +152,7 @@ export function Footer() {
 
         <div className="border-t border-border/40 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-muted-foreground text-xs sm:text-sm text-center sm:text-left">
-            © 2025 Perspective AI Marketplace. Built with ❤️ for the decentralized future.
+            © 2025 AI Nexus Marketplace. Built with ❤️ for the decentralized future.
           </p>
           <div className="flex items-center gap-6">
             <Link 
