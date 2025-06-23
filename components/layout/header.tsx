@@ -14,6 +14,7 @@ import { gsap } from 'gsap';
 const navigation = [
   { name: 'For Users', href: '/' },
   { name: 'For Creators', href: '/developer' },
+  { name: 'Pricing', href: '/pricing' },
 ];
 
 export function Header() {
