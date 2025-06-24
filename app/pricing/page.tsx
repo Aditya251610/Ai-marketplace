@@ -30,6 +30,7 @@ import {
 import { toast } from 'sonner';
 import { gsap } from 'gsap';
 import { useAccount } from 'wagmi';
+import { RAZORPAY_PLANS, PLAN_FEATURES, formatPrice, loadRazorpayScript } from '@/lib/razorpay';
 
 type PricingPlan = {
   id: string;
@@ -39,10 +40,10 @@ type PricingPlan = {
   badge?: string;
   badgeColor?: string;
   pricing: {
-    weekly: { price: number; uploads: number; priceId: string };
-    monthly: { price: number; uploads: number; priceId: string };
-    quarterly: { price: number; uploads: number; priceId: string };
-    yearly: { price: number; uploads: number; priceId: string };
+    weekly: { price: number; uploads: number };
+    monthly: { price: number; uploads: number };
+    quarterly: { price: number; uploads: number };
+    yearly: { price: number; uploads: number };
   };
   features: string[];
   limitations?: string[];
@@ -56,20 +57,8 @@ const pricingPlans: PricingPlan[] = [
     name: 'Starter',
     description: 'Perfect for individual developers getting started',
     icon: Code,
-    pricing: {
-      weekly: { price: 9, uploads: 2, priceId: 'price_starter_weekly' },
-      monthly: { price: 29, uploads: 8, priceId: 'price_starter_monthly' },
-      quarterly: { price: 79, uploads: 25, priceId: 'price_starter_quarterly' },
-      yearly: { price: 299, uploads: 100, priceId: 'price_starter_yearly' }
-    },
-    features: [
-      'Upload AI agents to marketplace',
-      'Basic model hosting on IPFS',
-      'Standard performance analytics',
-      'Community support',
-      'Basic revenue sharing (90%)',
-      'Standard model validation'
-    ],
+    pricing: RAZORPAY_PLANS.starter,
+    features: PLAN_FEATURES.starter.features,
     limitations: [
       'Limited to specified upload quota',
       'Standard processing priority',
@@ -84,24 +73,8 @@ const pricingPlans: PricingPlan[] = [
     badge: 'Most Popular',
     badgeColor: 'primary',
     popular: true,
-    pricing: {
-      weekly: { price: 19, uploads: 5, priceId: 'price_pro_weekly' },
-      monthly: { price: 69, uploads: 20, priceId: 'price_pro_monthly' },
-      quarterly: { price: 189, uploads: 65, priceId: 'price_pro_quarterly' },
-      yearly: { price: 699, uploads: 260, priceId: 'price_pro_yearly' }
-    },
-    features: [
-      'Everything in Starter',
-      'Priority model processing',
-      'Advanced analytics dashboard',
-      'A/B testing for models',
-      'Custom model categories',
-      'Priority support (24h response)',
-      'Enhanced revenue sharing (92%)',
-      'Model versioning & rollback',
-      'Custom pricing for models',
-      'Beta feature access'
-    ]
+    pricing: RAZORPAY_PLANS.professional,
+    features: PLAN_FEATURES.professional.features
   },
   {
     id: 'enterprise',
@@ -111,28 +84,8 @@ const pricingPlans: PricingPlan[] = [
     badge: 'Best Value',
     badgeColor: 'secondary',
     enterprise: true,
-    pricing: {
-      weekly: { price: 49, uploads: 15, priceId: 'price_enterprise_weekly' },
-      monthly: { price: 199, uploads: 60, priceId: 'price_enterprise_monthly' },
-      quarterly: { price: 549, uploads: 200, priceId: 'price_enterprise_quarterly' },
-      yearly: { price: 1999, uploads: 800, priceId: 'price_enterprise_yearly' }
-    },
-    features: [
-      'Everything in Professional',
-      'Unlimited model hosting',
-      'White-label solutions',
-      'Dedicated account manager',
-      'Custom integrations & APIs',
-      'Priority support (2h response)',
-      'Maximum revenue sharing (95%)',
-      'Advanced security features',
-      'Custom compliance options',
-      'Private model repositories',
-      'Bulk upload tools',
-      'Advanced team management',
-      'Custom analytics & reporting',
-      'SLA guarantees'
-    ]
+    pricing: RAZORPAY_PLANS.enterprise,
+    features: PLAN_FEATURES.enterprise.features
   }
 ];
 
@@ -199,7 +152,7 @@ const faqs = [
   },
   {
     question: 'What payment methods do you accept?',
-    answer: 'We accept all major credit cards, PayPal, and cryptocurrency payments through Stripe.'
+    answer: 'We accept all major credit cards, debit cards, UPI, net banking, and digital wallets through Razorpay.'
   }
 ];
 
@@ -253,34 +206,96 @@ export default function PricingPage() {
     setLoading(plan.id);
 
     try {
-      // Get the price ID for the selected billing period
-      const priceId = plan.pricing[billingPeriod].priceId;
+      // Load Razorpay script
+      const isRazorpayLoaded = await loadRazorpayScript();
+      if (!isRazorpayLoaded) {
+        throw new Error('Failed to load Razorpay SDK');
+      }
 
-      // Create Stripe checkout session
-      const response = await fetch('/api/stripe/create-checkout', {
+      // Get the price for the selected billing period
+      const planPrice = plan.pricing[billingPeriod];
+
+      // Create Razorpay order
+      const response = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId,
           planId: plan.id,
           billingPeriod,
+          amount: planPrice.price,
           walletAddress: address,
-          successUrl: `${window.location.origin}/dashboard?subscription=success`,
-          cancelUrl: `${window.location.origin}/pricing?subscription=cancelled`
+          userEmail: '', // You can collect this from user if needed
+          userName: ''   // You can collect this from user if needed
         })
       });
 
-      const { sessionId, error } = await response.json();
+      const orderData = await response.json();
 
-      if (error) {
-        throw new Error(error);
+      if (orderData.error) {
+        throw new Error(orderData.error);
       }
 
-      // Redirect to Stripe Checkout
-      const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-      await stripe.redirectToCheckout({ sessionId });
+      // Configure Razorpay options
+      const options = {
+        key: orderData.key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'AI Nexus',
+        description: `${plan.name} Plan - ${billingPeriod}`,
+        order_id: orderData.orderId,
+        handler: async (response: any) => {
+          try {
+            // Verify payment
+            const verifyResponse = await fetch('/api/razorpay/verify-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                planId: plan.id,
+                billingPeriod,
+                walletAddress: address
+              })
+            });
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.success) {
+              toast.success('🎉 Payment successful! Your subscription is now active.');
+              // Redirect to dashboard
+              window.location.href = '/dashboard?subscription=success';
+            } else {
+              throw new Error(verifyData.error || 'Payment verification failed');
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            toast.error('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        theme: {
+          color: '#22c55e'
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(null);
+            toast.info('Payment cancelled');
+          }
+        }
+      };
+
+      // Open Razorpay checkout
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
 
     } catch (error) {
       console.error('Subscription error:', error);
@@ -380,7 +395,7 @@ export default function PricingPage() {
                     {/* Pricing */}
                     <div className="text-center">
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-4xl font-bold text-gradient">${currentPricing.price}</span>
+                        <span className="text-4xl font-bold text-gradient">{formatPrice(currentPricing.price)}</span>
                         <span className="text-muted-foreground">/{billingPeriod === 'weekly' ? 'week' : billingPeriod === 'monthly' ? 'month' : billingPeriod === 'quarterly' ? '3 months' : 'year'}</span>
                       </div>
                       {savings > 0 && (
